@@ -3,6 +3,10 @@ package db_test
 import (
 	"database/sql"
 	"log"
+	"testing"
+
+	"github.com/andrefsilveira1/hexagonal/adapters/db"
+	"github.com/stretchr/testify/require"
 )
 
 var DB *sql.DB
@@ -14,7 +18,7 @@ func setup() {
 	createProduct(DB)
 }
 
-func createTable(db *sql.DB) {
+func createTable(database *sql.DB) {
 	table := `CREATE TABLE products (
 		"id" string,
 		"name" string,
@@ -22,7 +26,7 @@ func createTable(db *sql.DB) {
 		"status" string
 	);`
 
-	stmt, err := db.Prepare(table)
+	stmt, err := database.Prepare(table)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -30,12 +34,21 @@ func createTable(db *sql.DB) {
 	stmt.Exec()
 }
 
-func createProduct(db *sql.DB) {
-	insert := `INSERT INTO products values ("abc", "Product Test", 0, "disabled")`
-	stmt, err := db.Prepare(insert)
+func createProduct(database *sql.DB) {
+	insert := `INSERT INTO products values("abc", "Product Test", 0, "disabled")`
+	stmt, err := database.Prepare(insert)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
 	stmt.Exec()
+}
+
+func TestProductDB(t *testing.T) {
+	setup()
+	defer DB.Close()
+	productDB := db.NewProductDB(DB)
+	product, err := productDB.Get("abc")
+	require.Nil(t, err)
+	require.Equal(t, "Product Test", product.GetName())
 }
