@@ -20,7 +20,7 @@ func CreateNewServer() *Server {
 	return &Server{}
 }
 
-func (s Server) serve() {
+func (s Server) Serve() {
 
 	r := mux.NewRouter()
 	n := negroni.New(
